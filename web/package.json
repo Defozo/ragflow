@@ -51,7 +51,7 @@
     "reactflow": "^11.11.2",
     "recharts": "^2.12.4",
     "remark-gfm": "^4.0.0",
-    "umi": "^4.0.90",
+    "umi": "^4.3.20",
     "umi-request": "^1.4.0",
     "unist-util-visit-parents": "^6.0.1",
     "uuid": "^9.0.1",

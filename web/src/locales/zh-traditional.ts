@@ -59,6 +59,7 @@ export default {
       logout: '登出',
       fileManager: '文件管理',
       flow: 'Agent',
+      search: '搜尋',
     },
     knowledgeList: {
       welcome: '歡迎回來',
@@ -190,7 +191,7 @@ export default {
         我們假設手冊具有分層部分結構。我們使用最低的部分標題作為對文檔進行切片的樞軸。
         因此，同一部分中的圖和表不會被分割，並且塊大小可能會很大。
         </p>`,
-      naive: `<p>支持的文件格式為<b>DOCX、EXCEL、PPT、IMAGE、PDF、TXT、MD、JSON、EML</b>。</p>
+      naive: `<p>支持的文件格式為<b>DOCX、EXCEL、PPT、IMAGE、PDF、TXT、MD、JSON、EML、HTML</b>。</p>
         <p>此方法將簡單的方法應用於塊文件：</p>
         <p>
         <li>系統將使用視覺檢測模型將連續文本分割成多個片段。</li>
@@ -395,6 +396,12 @@ export default {
       parsing: '解析中',
       uploading: '上傳中',
       uploadFailed: '上傳失敗',
+      regenerate: '重新生成',
+      read: '朗讀內容',
+      tts: '文字轉語音',
+      ttsTip: '是否用語音轉換播放語音，請先在設定裡面選擇TTS（語音轉換模型）。',
+      relatedQuestion: '相關問題',
+      answerTitle: '智慧回答',
     },
     setting: {
       profile: '概述',
@@ -443,6 +450,8 @@ export default {
       systemModelSettings: '系統模型設置',
       chatModel: '聊天模型',
       chatModelTip: '所有新創建的知識庫都會使用默認的聊天LLM。',
+      ttsModel: '語音合成模型',
+      ttsModelTip: '默認的tts模型會被用於在對話過程中請求語音生成時使用。',
       embeddingModel: '嵌入模型',
       embeddingModelTip: '所有新創建的知識庫都將使用的默認嵌入模型。',
       img2txtModel: 'img2Txt模型',
@@ -457,6 +466,7 @@ export default {
       upgrade: '升級',
       addLlmTitle: '添加Llm',
       modelName: '模型名稱',
+      modelID: '模型ID',
       modelUid: '模型uid',
       modelType: '模型類型',
       addLlmBaseUrl: '基礎 Url',
@@ -465,11 +475,13 @@ export default {
       modelTypeMessage: '請輸入模型類型！',
       baseUrlNameMessage: '請輸入基礎 Url！',
       ollamaLink: '如何集成 {{name}}',
-      volcModelNameMessage: '請輸入模型名稱！格式：{"模型名稱":"EndpointID"}',
-      addVolcEngineAK: '火山 ACCESS_KEY',
-      volcAKMessage: '請輸入VOLC_ACCESS_KEY',
-      addVolcEngineSK: '火山 SECRET_KEY',
-      volcSKMessage: '請輸入VOLC_SECRET_KEY',
+      FishAudioLink: '如何使用Fish Audio',
+      TencentCloudLink: '如何使用騰訊雲語音識別',
+      volcModelNameMessage: '請輸入模型名稱！',
+      addEndpointID: '模型 EndpointID',
+      endpointIDMessage: '請輸入模型對應的EndpointID',
+      addArkApiKey: '火山 ARK_API_KEY',
+      ArkApiKeyMessage: '請輸入火山創建的ARK_API_KEY',
       bedrockModelNameMessage: '請輸入名稱！',
       addBedrockEngineAK: 'ACCESS KEY',
       bedrockAKMessage: '請輸入 ACCESS KEY',
@@ -488,6 +500,10 @@ export default {
       HunyuanSIDMessage: '請輸入 Secret ID',
       addHunyuanSK: '混元 Secret Key',
       HunyuanSKMessage: '請輸入 Secret Key',
+      addTencentCloudSID: '騰訊雲 Secret ID',
+      TencentCloudSIDMessage: '請輸入 Secret ID',
+      addTencentCloudSK: '騰訊雲 Secret Key',
+      TencentCloudSKMessage: '請輸入 Secret Key',
       SparkModelNameMessage: '請選擇星火模型!',
       addSparkAPIPassword: '星火 APIPassword',
       SparkAPIPasswordMessage: '請輸入 APIPassword',
@@ -496,6 +512,20 @@ export default {
       yiyanAKMessage: '請輸入 API KEY',
       addyiyanSK: '一言 Secret KEY',
       yiyanSKMessage: '請輸入 Secret KEY',
+      FishAudioModelNameMessage: '請為你的TTS模型起名',
+      addFishAudioAK: 'Fish Audio API KEY',
+      addFishAudioAKMessage: '請輸入 API KEY',
+      addFishAudioRefID: 'FishAudio Refrence ID',
+      addFishAudioRefIDMessage: '請輸入引用模型的ID（留空表示使用默認模型）',
+      GoogleModelIDMessage: '請輸入 model ID!',
+      addGoogleProjectID: 'Project ID',
+      GoogleProjectIDMessage: '請輸入 Project ID',
+      addGoogleServiceAccountKey:
+        'Service Account Key(Leave blank if you use Application Default Credentials)',
+      GoogleServiceAccountKeyMessage:
+        '請輸入 Google Cloud Service Account Key in base64 format',
+      addGoogleRegion: 'Google Cloud 區域',
+      GoogleRegionMessage: '請輸入 Google Cloud 區域',
     },
     message: {
       registered: '註冊成功',
@@ -562,6 +592,7 @@ export default {
       messagePlaceholder: '訊息',
       messageMsg: '請輸入訊息或刪除此欄位。',
       addField: '新增字段',
+      addMessage: '新增訊息',
       loop: '循環上限',
       loopTip:
         'loop為目前元件循環次數上限，當循環次數超過loop的值時，表示元件無法完成目前任務，請重新最佳化agent',
@@ -573,7 +604,7 @@ export default {
       operation: '操作',
       run: '運行',
       save: '儲存',
-      title: '標題：',
+      title: 'ID：',
 
       beginDescription: '這是流程開始的地方',
       answerDescription: `該組件用作機器人與人類之間的介面。它接收使用者的輸入並顯示機器人的計算結果。`,
@@ -585,6 +616,7 @@ export default {
       messageDescription:
         '此元件用於向使用者發送靜態訊息。您可以準備幾條訊息，這些訊息將隨機選擇。',
       keywordDescription: `該組件用於從用戶的問題中提取關鍵字。 Top N指定需要提取的關鍵字數量。`,
+      switchDescription: `該組件用於根據前面組件的輸出評估條件，並相應地引導執行流程。通過定義各種情況並指定操作，或在不滿足條件時採取默認操作，實現複雜的分支邏輯。`,
       wikipediaDescription: `此元件用於從 https://www.wikipedia.org/ 取得搜尋結果。通常，它作為知識庫的補充。 Top N 指定您需要調整的搜尋結果數。`,
       promptText: `請總結以下段落。注意數字，不要胡編亂造。段落如下：
 {input}
@@ -799,6 +831,26 @@ export default {
       },
       operator: '操作符',
       value: '值',
+      useTemplate: '使用該模板',
+      wenCai: '問財',
+      queryType: '查詢類型',
+      wenCaiDescription:
+        '該組件可用於獲取廣泛的金融領域的o息，包括但不限於股票、基金等...',
+      wenCaiQueryTypeOptions: {
+        stock: '股票',
+        zhishu: '指數',
+        fund: '基金',
+        hkstock: '港股',
+        usstock: '美股',
+        threeboard: '新三板',
+        conbond: '可轉債',
+        insurance: '保險',
+        futures: '期貨',
+        lccp: '理財',
+        foreign_exchange: '股票',
+      },
+      akShare: 'AkShare',
+      akShareDescription: '此組件可用於從東方財富網取得對應股票的新聞資訊。',
     },
     footer: {
       profile: '“保留所有權利 @ react”',
