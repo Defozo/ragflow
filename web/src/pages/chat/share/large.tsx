@@ -46,7 +46,7 @@ const ChatContainer = () => {
     
     // Add the user's message to the conversation immediately
     const userMessage = { id: Date.now().toString(), content: prompt, role: MessageType.Human };
-    addNewestConversation({ content: prompt });
+    addNewestConversation(userMessage); // Pass the correct message object
     
     // Send the message
     await handleSendMessage(prompt);
