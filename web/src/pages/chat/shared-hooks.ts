@@ -156,6 +156,7 @@ export const useSendSharedMessage = (conversationId: string) => {
     ref,
     loading,
     derivedMessages,
+    handleSendMessage, // Ensure this is returned
   };
 };
 

@@ -3,7 +3,7 @@ import MessageItem from '@/components/message-item';
 import { MessageType, SharedFrom } from '@/constants/chat';
 import { useFetchNextSharedConversation } from '@/hooks/chat-hooks';
 import { useSendButtonDisabled } from '@/pages/chat/hooks';
-import { Flex, Spin } from 'antd';
+import { Flex, Spin, Button } from 'antd';
 import { forwardRef } from 'react';
 import {
   useCreateSharedConversationOnMount,
@@ -12,6 +12,15 @@ import {
 } from '../shared-hooks';
 import { buildMessageItemReference } from '../utils';
 import styles from './index.less';
+
+// Add predefined prompts
+const predefinedPrompts = [
+  "Who is Daniel?",
+  "What are the best practices for API error handling?",
+  "How can I optimize my website's performance?",
+  "Explain the differences between REST and GraphQL.",
+  "What are the key principles of responsive web design?",
+];
 
 const ChatContainer = () => {
   const { conversationId } = useCreateSharedConversationOnMount();
@@ -22,16 +31,45 @@ const ChatContainer = () => {
     handleInputChange,
     value,
     sendLoading,
+    handleSendMessage, // Ensure this is imported
     loading,
     ref,
     derivedMessages,
   } = useSendSharedMessage(conversationId);
+
   const sendDisabled = useSendButtonDisabled(value);
   const { from } = useGetSharedChatSearchParams();
+
+  // Modify the function to handle predefined prompt selection and send immediately
+  const handlePredefinedPrompt = async (prompt: string) => {
+    console.log('Predefined prompt clicked:', prompt);
+    
+    // Add the user's message to the conversation immediately
+    const userMessage = { id: Date.now().toString(), content: prompt, role: MessageType.Human };
+    addNewestConversation({ content: prompt });
+    
+    // Send the message
+    await handleSendMessage(prompt);
+    
+    console.log('Message sent');
+  };
 
   return (
     <>
       <Flex flex={1} className={styles.chatContainer} vertical>
+        <Flex className={styles.predefinedPrompts}>
+          {predefinedPrompts.map((prompt, index) => (
+            <Button
+              key={index}
+              onClick={() => handlePredefinedPrompt(prompt)}
+              className={styles.promptButton}
+              disabled={sendLoading} // Disable buttons while sending
+            >
+              {prompt}
+            </Button>
+          ))}
+        </Flex>
+
         <Flex flex={1} vertical className={styles.messageContainer}>
           <div>
             <Spin spinning={loading}>
