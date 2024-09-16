@@ -106,8 +106,7 @@ const MessageItem = ({
             <Avatar
               size={40}
               src={
-                avatar ??
-                'https://zos.alipayobjects.com/rmsportal/jkjgkEfvpUPVyRjUImniVslZfWPnJuuZ.png'
+                require('@/assets/svg/default-avatar.svg').default
               }
             />
           ) : (

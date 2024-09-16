@@ -15,11 +15,11 @@ import styles from './index.less';
 
 // Add predefined prompts
 const predefinedPrompts = [
-  "Who is Daniel?",
-  "What are the best practices for API error handling?",
-  "How can I optimize my website's performance?",
-  "Explain the differences between REST and GraphQL.",
-  "What are the key principles of responsive web design?",
+  "Who is Daniel M. Ringel?",
+  "In short, what are the 4 phases of the M4 Framework?",
+  "What is the market share of Canon EOS 760D vs Canon EOS 7D Mark II?",
+  "What are the potential benefits for managers in adjusting their marketing mix decisions based on insights from M4's maps?",
+  "How does ChatGPT-4's agreement with experts differ from its agreement with amateurs in terms of Krippendorff's alpha and classification performance?",
 ];
 
 const ChatContainer = () => {
