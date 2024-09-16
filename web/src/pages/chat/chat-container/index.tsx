@@ -63,9 +63,12 @@ const ChatContainer = () => {
                       conversation?.message.length - 1 === i
                     }
                     key={message.id}
-                    item={message}
-                    nickname={userInfo.nickname}
-                    avatar={userInfo.avatar}
+                    item={{
+                      ...message,
+                      role: message.role === MessageType.User ? MessageType.Human : message.role
+                    }}
+                    nickname={message.role === MessageType.User ? userInfo.nickname : ''}
+                    avatar={message.role === MessageType.User ? userInfo.avatar : ''}
                     reference={buildMessageItemReference(conversation, message)}
                     clickDocumentButton={clickDocumentButton}
                   ></MessageItem>

@@ -57,7 +57,7 @@ const ChatContainer = () => {
     
     // Add the user's message to the conversation immediately
     const userMessage = { id: Date.now().toString(), content: prompt, role: MessageType.Human };
-    addNewestConversation({ content: prompt });
+    addNewestConversation(userMessage); // Pass the correct message object
     
     // Send the message
     await handleSendMessage(prompt);
@@ -88,8 +88,11 @@ const ChatContainer = () => {
                 return (
                   <MessageItem
                     key={message.id}
-                    item={message}
-                    nickname={message.role === MessageType.Human ? "You" : "Assistant"}
+                    item={{
+                      ...message,
+                      role: message.role === MessageType.User ? MessageType.Human : message.role
+                    }}
+                    nickname={message.role === MessageType.User ? "You" : "Assistant"}
                     reference={buildMessageItemReference(conversation, message)}
                     loading={
                       message.role === MessageType.Assistant &&

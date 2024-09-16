@@ -39,7 +39,7 @@ const MessageItem = ({
   clickDocumentButton,
 }: IProps) => {
   const isAssistant = item.role === MessageType.Assistant;
-  const isUser = item.role === MessageType.User;
+  const isUser = item.role === MessageType.Human; // Adjusted to check for Human type
   const { t } = useTranslate('chat');
   const fileThumbnails = useSelectFileThumbnails();
   const { data: documentList, setDocumentIds } = useFetchDocumentInfosByIds();
@@ -82,22 +82,22 @@ const MessageItem = ({
   return (
     <div
       className={classNames(styles.messageItem, {
-        [styles.messageItemLeft]: item.role === MessageType.Assistant,
-        [styles.messageItemRight]: item.role === MessageType.User,
+        [styles.messageItemLeft]: isAssistant,
+        [styles.messageItemRight]: isUser,
       })}
     >
       <section
         className={classNames(styles.messageItemSection, {
-          [styles.messageItemSectionLeft]: item.role === MessageType.Assistant,
-          [styles.messageItemSectionRight]: item.role === MessageType.User,
+          [styles.messageItemSectionLeft]: isAssistant,
+          [styles.messageItemSectionRight]: isUser,
         })}
       >
         <div
           className={classNames(styles.messageItemContent, {
-            [styles.messageItemContentReverse]: item.role === MessageType.User,
+            [styles.messageItemContentReverse]: isUser,
           })}
         >
-          {item.role === MessageType.User ? (
+          {isUser ? (
             <Avatar
               size={40}
               src={
@@ -109,7 +109,7 @@ const MessageItem = ({
             <AssistantIcon></AssistantIcon>
           )}
           <Flex vertical gap={8} flex={1}>
-            <b>{isAssistant ? '' : nickname}</b>
+            <b>{isUser ? nickname : ''}</b> {/* Adjusted to show nickname for user */}
             <div
               className={
                 isAssistant ? styles.messageText : styles.messageUserText
@@ -152,36 +152,21 @@ const MessageItem = ({
                 bordered
                 dataSource={documentList}
                 renderItem={(item) => {
-                  // TODO:
-                  const fileThumbnail =
-                    documentThumbnails[item.id] || fileThumbnails[item.id];
-                  const fileExtension = getExtension(item.name);
                   return (
                     <List.Item>
                       <Flex gap={'small'} align="center">
-                        <FileIcon id={item.id} name={item.name}></FileIcon>
+                        <FileIcon
+                          id={item.doc_id}
+                          name={item.doc_name}
+                        ></FileIcon>
 
-                        {isImage(fileExtension) ? (
-                          <NewDocumentLink
-                            documentId={item.id}
-                            documentName={item.name}
-                            prefix="document"
-                          >
-                            {item.name}
-                          </NewDocumentLink>
-                        ) : (
-                          <Button
-                            type={'text'}
-                            onClick={handleUserDocumentClick(item.id)}
-                          >
-                            <Text
-                              style={{ maxWidth: '40vw' }}
-                              ellipsis={{ tooltip: item.name }}
-                            >
-                              {item.name}
-                            </Text>
-                          </Button>
-                        )}
+                        <NewDocumentLink
+                          documentId={item.doc_id}
+                          documentName={item.doc_name}
+                          prefix="document"
+                        >
+                          {item.doc_name}
+                        </NewDocumentLink>
                       </Flex>
                     </List.Item>
                   );
@@ -191,13 +176,6 @@ const MessageItem = ({
           </Flex>
         </div>
       </section>
-      {visible && (
-        <IndentedTreeModal
-          visible={visible}
-          hideModal={hideModal}
-          documentId={clickedDocumentId}
-        ></IndentedTreeModal>
-      )}
     </div>
   );
 };
