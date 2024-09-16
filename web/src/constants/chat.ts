@@ -1,6 +1,7 @@
 export enum MessageType {
   Assistant = 'assistant',
   User = 'user',
+  Human = "Human",
 }
 
 export const variableEnabledFieldMap = {

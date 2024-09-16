@@ -223,6 +223,7 @@ export const useSendSharedMessage = (
     handleInputChange,
     value,
     loading: !done,
+    handleSendMessage, // Ensure this is returned
   };
 };
 
