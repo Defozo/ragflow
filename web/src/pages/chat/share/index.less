@@ -3,24 +3,32 @@
 }
 
 .chatContainer {
-  padding: 10px;
+  padding: 0 0 24px 24px;
   box-sizing: border-box;
   height: 100%;
   .messageContainer {
     overflow-y: auto;
-    padding-right: 6px;
+    padding-right: 24px;
   }
 }
 
-.predefinedPrompts {
+.predefinedPromptsWrapper {
+  width: 100%;
+  padding-right: 24px; // To align with the right padding of messageContainer
+}
+
+.predefinedPromptsContainer {
+  width: 100%;
   padding: 16px;
-  gap: 12px;
-  flex-wrap: wrap;
+  margin-bottom: 16px;
   background-color: #f0f2f5;
   border-radius: 8px;
-  margin-bottom: 24px;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: center;
 }
 
 .promptButton {
-  margin-bottom: 8px;
+  margin: 4px;
 }

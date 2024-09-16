@@ -154,6 +154,8 @@ export const useSendSharedMessage = (
     api.completeExternalConversation,
   );
 
+  const [showPredefinedPrompts, setShowPredefinedPrompts] = useState(true);
+
   const sendMessage = useCallback(
     async (message: string, id?: string) => {
       const res = await send({
@@ -187,6 +189,7 @@ export const useSendSharedMessage = (
 
   const handleSendMessage = useCallback(
     async (message: string) => {
+      setShowPredefinedPrompts(false); // Hide prompts when a message is sent
       if (conversationId !== '') {
         sendMessage(message);
       } else {
@@ -199,6 +202,12 @@ export const useSendSharedMessage = (
     },
     [conversationId, setConversation, sendMessage],
   );
+
+  const handlePredefinedPromptClick = useCallback((promptMessage: string) => {
+    setShowPredefinedPrompts(false); // Hide prompts when a predefined prompt is clicked
+    setValue(promptMessage);
+    handleSendMessage(promptMessage);
+  }, [setValue, handleSendMessage]);
 
   useEffect(() => {
     if (answer.answer) {
@@ -223,7 +232,9 @@ export const useSendSharedMessage = (
     handleInputChange,
     value,
     loading: !done,
-    handleSendMessage, // Ensure this is returned
+    handleSendMessage,
+    showPredefinedPrompts,
+    handlePredefinedPromptClick,
   };
 };
 
