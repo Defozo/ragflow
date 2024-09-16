@@ -70,23 +70,6 @@ const ChatContainer = () => {
   return (
     <>
       <Flex flex={1} className={styles.chatContainer} vertical>
-        {showPredefinedPrompts && (
-          <div className={styles.predefinedPromptsWrapper}>
-            <div className={styles.predefinedPromptsContainer}>
-              {predefinedPrompts.map((prompt, index) => (
-                <Button
-                  key={index}
-                  onClick={() => handlePredefinedPrompt(prompt)}
-                  className={styles.promptButton}
-                  disabled={sendLoading}
-                >
-                  {prompt}
-                </Button>
-              ))}
-            </div>
-          </div>
-        )}
-
         <Flex flex={1} vertical className={styles.messageContainer}>
           <div>
             <Spin spinning={loading}>
@@ -114,6 +97,22 @@ const ChatContainer = () => {
               })}
             </Spin>
           </div>
+          
+          {showPredefinedPrompts && (
+            <div className={styles.predefinedPromptsContainer}>
+              {predefinedPrompts.map((prompt, index) => (
+                <Button
+                  key={index}
+                  onClick={() => handlePredefinedPrompt(prompt)}
+                  className={styles.promptButton}
+                  disabled={sendLoading}
+                >
+                  {prompt}
+                </Button>
+              ))}
+            </div>
+          )}
+          
           <div ref={ref} />
         </Flex>
 
