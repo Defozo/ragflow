@@ -111,7 +111,7 @@ const ChatContainer = () => {
                 <Button
                   key={index}
                   onClick={() => handlePredefinedPrompt(prompt)}
-                  className={styles.promptButton}
+                  className={`${styles.promptButton} ${styles.wrapText}`}
                   disabled={sendLoading}
                 >
                   {prompt}
