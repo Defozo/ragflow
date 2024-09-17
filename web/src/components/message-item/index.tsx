@@ -49,20 +49,8 @@ const MessageItem = ({
   const [clickedDocumentId, setClickedDocumentId] = useState('');
 
   const referenceDocumentList = useMemo(() => {
-    const docAggs = reference?.doc_aggs ?? [];
-    const chunkDocs = (reference?.chunks ?? []).map(chunk => ({
-      doc_id: chunk.doc_id,
-      doc_name: chunk.docnm_kwd
-    }));
-
-    // Combine and deduplicate
-    const combinedDocs = [...docAggs, ...chunkDocs];
-    const uniqueDocs = combinedDocs.filter((doc, index, self) =>
-      index === self.findIndex((t) => t.doc_id === doc.doc_id)
-    );
-
-    return uniqueDocs;
-  }, [reference]);
+    return reference?.doc_aggs ?? [];
+  }, [reference?.doc_aggs]);
 
   const content = useMemo(() => {
     let text = item.content;
@@ -120,7 +108,7 @@ const MessageItem = ({
             <AssistantIcon></AssistantIcon>
           )}
           <Flex vertical gap={8} flex={1}>
-            <b>{isUser ? nickname : 'Librarian AI Assistant'}</b>
+            <b>{isUser ? nickname : ''}</b> {/* Adjusted to show nickname for user */}
             <div
               className={
                 isAssistant ? styles.messageText : styles.messageUserText
