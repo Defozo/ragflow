@@ -61,6 +61,16 @@ const MessageItem = ({
     return reference?.doc_aggs ?? [];
   }, [reference?.doc_aggs]);
 
+  const content = useMemo(() => {
+    let text = item.content;
+    if (text === '') {
+      text = t('searching');
+    }
+    return loading ? text?.concat('~~2$$') : text;
+  }, [item.content, loading, t]);
+    return reference?.doc_aggs ?? [];
+  }, [reference?.doc_aggs]);
+
   const handleUserDocumentClick = useCallback(
     (id: string) => () => {
       setClickedDocumentId(id);
