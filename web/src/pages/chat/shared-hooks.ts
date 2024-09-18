@@ -97,9 +97,16 @@ export const useSendSharedMessage = (conversationId: string) => {
       });
 
       if (res && (res?.response.status !== 200 || res?.data?.retcode !== 0)) {
-        // cancel loading
         setValue(message.content);
-        removeLatestMessage();
+        addNewestAnswer({
+          answer: "Sorry! I have insufficient information to answer your question.",
+          reference: {
+            chunks: [],
+            doc_aggs: [],
+            total: 0
+          },
+          id: uuid(),
+        });
       }
     },
     [conversationId, derivedMessages, removeLatestMessage, setValue, send],

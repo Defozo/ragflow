@@ -77,6 +77,7 @@ const ChatContainer = () => {
             id,
             role: MessageType.User,
           };
+          setShowPredefinedPrompts(false); // Make the predefined prompt buttons invisible
           addNewestQuestion(userMessage);
           handleSendMessage(userMessage);
           setInputValue(''); // Clear the input after sending
