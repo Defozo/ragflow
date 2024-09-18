@@ -52,7 +52,7 @@ export const AssistantGroupButton = ({
         <Radio.Button value="a">
           <CopyToClipboard text={content}></CopyToClipboard>
         </Radio.Button>
-        <Radio.Button value="b" onClick={handleRead}>
+        {/* <Radio.Button value="b" onClick={handleRead}>
           <Tooltip title={t('chat.read')}>
             {isPlaying ? <PauseCircleOutlined /> : <SoundOutlined />}
           </Tooltip>
@@ -67,7 +67,7 @@ export const AssistantGroupButton = ({
               <DislikeOutlined />
             </Radio.Button>
           </>
-        )}
+        )} */}
         {prompt && (
           <Radio.Button value="e" onClick={showPromptModal}>
             <SvgIcon name={`prompt`} width={16}></SvgIcon>

@@ -79,8 +79,6 @@ export const useSendSharedMessage = (conversationId: string) => {
   const { send, answer, done } = useSendMessageWithSse(
     api.completeExternalConversation,
   );
-
-  const [showPredefinedPrompts, setShowPredefinedPrompts] = useState(true);
   const {
     derivedMessages,
     ref,
@@ -108,8 +106,7 @@ export const useSendSharedMessage = (conversationId: string) => {
   );
 
   const handleSendMessage = useCallback(
-    async (message: string) => {
-      setShowPredefinedPrompts(false); // Hide prompts when a message is sent
+    async (message: Message) => {
       if (conversationId !== '') {
         sendMessage(message);
       } else {
@@ -123,12 +120,6 @@ export const useSendSharedMessage = (conversationId: string) => {
     [conversationId, setConversation, sendMessage],
   );
 
-  const handlePredefinedPromptClick = useCallback((promptMessage: string) => {
-    setShowPredefinedPrompts(false); // Hide prompts when a predefined prompt is clicked
-    setValue(promptMessage);
-    handleSendMessage(promptMessage);
-  }, [setValue, handleSendMessage]);
-
   useEffect(() => {
     if (answer.answer) {
       addNewestAnswer(answer);
@@ -136,19 +127,20 @@ export const useSendSharedMessage = (conversationId: string) => {
   }, [answer, addNewestAnswer]);
 
   const handlePressEnter = useCallback(
-    (documentIds: string[]) => {
-      if (trim(value) === '') return;
+    (input: string | string[]) => {
+      const message = Array.isArray(input) ? input[0] : value;
+      if (trim(message) === '') return;
       const id = uuid();
       if (done) {
         setValue('');
         addNewestQuestion({
-          content: value,
-          doc_ids: documentIds,
+          content: message,
+          doc_ids: [],
           id,
           role: MessageType.User,
         });
         handleSendMessage({
-          content: value.trim(),
+          content: message.trim(),
           id,
           role: MessageType.User,
         });
@@ -166,8 +158,7 @@ export const useSendSharedMessage = (conversationId: string) => {
     loading,
     derivedMessages,
     handleSendMessage,
-    showPredefinedPrompts,
-    handlePredefinedPromptClick,
+    addNewestQuestion,
   };
 };
 

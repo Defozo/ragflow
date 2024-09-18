@@ -47,6 +47,7 @@ const ActionCell = ({
   const isKnowledgeBase = record.source_type === 'knowledgebase';
 
   const onDownloadDocument = () => {
+    console.log('Downloading document:', documentId, record.name);
     downloadFile({
       url: `${api_host}/file/get/${documentId}`,
       filename: record.name,

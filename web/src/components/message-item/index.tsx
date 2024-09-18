@@ -6,6 +6,11 @@ import { IReference } from '@/interfaces/database/chat';
 import { IChunk } from '@/interfaces/database/knowledge';
 import classNames from 'classnames';
 import { memo, useCallback, useEffect, useMemo, useState } from 'react';
+import { DownloadOutlined } from '@ant-design/icons';
+import { downloadFile } from '@/utils/file-util';
+import { api_host } from '@/utils/api';
+import { Button, Tooltip } from 'antd';
+import { useTranslate } from '@/hooks/common-hooks';
 
 import {
   useFetchDocumentInfosByIds,
@@ -15,7 +20,7 @@ import { IRegenerateMessage, IRemoveMessageById } from '@/hooks/logic-hooks';
 import { IMessage } from '@/pages/chat/interface';
 import MarkdownContent from '@/pages/chat/markdown-content';
 import { getExtension, isImage } from '@/utils/document-util';
-import { Avatar, Button, Flex, List, Space, Typography } from 'antd';
+import { Avatar, Flex, List, Space, Typography } from 'antd';
 import FileIcon from '../file-icon';
 import IndentedTreeModal from '../indented-tree/modal';
 import NewDocumentLink from '../new-document-link';
@@ -48,6 +53,7 @@ const MessageItem = ({
   regenerateMessage,
   showLikeButton = true,
 }: IProps) => {
+  const { t } = useTranslate('namespace');
   const isAssistant = item.role === MessageType.Assistant;
   const isUser = item.role === MessageType.User;
   const fileThumbnails = useSelectFileThumbnails();
@@ -83,6 +89,14 @@ const MessageItem = ({
       }
     }
   }, [item.doc_ids, setDocumentIds, setIds, fileThumbnails]);
+
+  const onDownloadDocument = useCallback((docId: string, docName: string) => () => {
+    console.log('Downloading document:', docId, docName);
+    downloadFile({
+      url: `${api_host}/file/get/d273635c720a11ef88d80242ac150006`, //TODO: Implement download file
+      filename: docName,
+    });
+  }, []);
 
   return (
     <div
@@ -135,8 +149,6 @@ const MessageItem = ({
                   sendLoading={sendLoading}
                 ></UserGroupButton>
               )}
-
-              {/* <b>{isAssistant ? '' : nickname}</b> */}
             </Space>
             <div
               className={
@@ -170,6 +182,15 @@ const MessageItem = ({
                         >
                           {item.doc_name}
                         </NewDocumentLink>
+
+                        <Tooltip title={t('download', { keyPrefix: 'common' })}>
+                          <Button
+                            type="text"
+                            icon={<DownloadOutlined />}
+                            onClick={onDownloadDocument(item.doc_id, item.doc_name)}
+                            style={{ marginLeft: '8px' }}
+                          />
+                        </Tooltip>
                       </Flex>
                     </List.Item>
                   );
@@ -185,16 +206,16 @@ const MessageItem = ({
                     <List.Item>
                       <Flex gap={'small'} align="center">
                         <FileIcon
-                          id={item.doc_id}
-                          name={item.doc_name}
+                          id={item.id}
+                          name={item.name}
                         ></FileIcon>
 
                         <NewDocumentLink
-                          documentId={item.doc_id}
-                          documentName={item.doc_name}
+                          documentId={item.id}
+                          documentName={item.name}
                           prefix="document"
                         >
-                          {item.doc_name}
+                          {item.name}
                         </NewDocumentLink>
                       </Flex>
                     </List.Item>

@@ -3,8 +3,9 @@ import MessageItem from '@/components/message-item';
 import { MessageType, SharedFrom } from '@/constants/chat';
 import { useFetchNextSharedConversation } from '@/hooks/chat-hooks';
 import { useSendButtonDisabled } from '@/pages/chat/hooks';
-import { Flex, Spin, Button, Space } from 'antd';
-import { forwardRef } from 'react';
+import { Flex, Spin, Button } from 'antd';
+import { forwardRef, useState } from 'react';
+import { v4 as uuid } from 'uuid';
 import {
   useCreateSharedConversationOnMount,
   useGetSharedChatSearchParams,
@@ -22,49 +23,39 @@ const predefinedPrompts = [
   "How does ChatGPT-4's agreement with experts differ from its agreement with amateurs in terms of Krippendorff's alpha and classification performance?",
 ];
 
-import { useState } from 'react';
-
 const ChatContainer = () => {
   const { conversationId } = useCreateSharedConversationOnMount();
   const { data } = useFetchNextSharedConversation(conversationId);
-
-  const [showPredefinedPrompts, setShowPredefinedPrompts] = useState(true);
 
   const {
     handlePressEnter,
     handleInputChange,
     value,
     sendLoading,
-    handleSendMessage, // Ensure this is imported
     loading,
     ref,
     derivedMessages,
+    handleSendMessage,
+    addNewestQuestion,
   } = useSendSharedMessage(conversationId);
-
   const sendDisabled = useSendButtonDisabled(value);
   const { from } = useGetSharedChatSearchParams();
 
-  // Modify the function to handle predefined prompt selection and send immediately
-  const handlePredefinedPrompt = async (prompt: string) => {
-    console.log('Predefined prompt clicked:', prompt);
-    
-    // Hide predefined prompts
-    setShowPredefinedPrompts(false);
-    
-    // Add the user's message to the conversation immediately
-    const userMessage = { id: Date.now().toString(), content: prompt, role: MessageType.Human };
-    addNewestConversation(userMessage);
-    
-    // Send the message
-    await handleSendMessage(prompt);
-    
-    console.log('Message sent');
-  };
+  const [showPredefinedPrompts, setShowPredefinedPrompts] = useState(true);
 
-  // Modify handlePressEnter to hide predefined prompts
-  const modifiedHandlePressEnter = (files: File[]) => {
+  const handlePredefinedPrompt = (prompt: string) => {
+    console.log('Predefined prompt clicked:', prompt);
     setShowPredefinedPrompts(false);
-    handlePressEnter(files);
+    const id = uuid();
+    
+    const userMessage = {
+      content: prompt.trim(),
+      id,
+      role: MessageType.User,
+    };
+    
+    addNewestQuestion(userMessage);
+    handleSendMessage(userMessage);
   };
 
   return (
@@ -123,7 +114,7 @@ const ChatContainer = () => {
           sendDisabled={sendDisabled}
           conversationId={conversationId}
           onInputChange={handleInputChange}
-          onPressEnter={modifiedHandlePressEnter}
+          onPressEnter={handlePressEnter}
           sendLoading={sendLoading}
           uploadMethod="external_upload_and_parse"
           showUploadIcon={from === SharedFrom.Chat}
