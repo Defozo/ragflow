@@ -4,7 +4,7 @@ import { MessageType, SharedFrom } from '@/constants/chat';
 import { useFetchNextSharedConversation } from '@/hooks/chat-hooks';
 import { useSendButtonDisabled } from '@/pages/chat/hooks';
 import { Flex, Spin, Button } from 'antd';
-import { forwardRef, useState } from 'react';
+import { forwardRef, useState, useCallback } from 'react';
 import { v4 as uuid } from 'uuid';
 import {
   useCreateSharedConversationOnMount,
@@ -28,9 +28,8 @@ const ChatContainer = () => {
   const { data } = useFetchNextSharedConversation(conversationId);
 
   const {
-    handlePressEnter,
-    handleInputChange,
-    value,
+    handleInputChange: originalHandleInputChange,
+    value: originalValue,
     sendLoading,
     loading,
     ref,
@@ -38,10 +37,17 @@ const ChatContainer = () => {
     handleSendMessage,
     addNewestQuestion,
   } = useSendSharedMessage(conversationId);
-  const sendDisabled = useSendButtonDisabled(value);
+
+  const [inputValue, setInputValue] = useState(originalValue);
+  const sendDisabled = useSendButtonDisabled(inputValue);
   const { from } = useGetSharedChatSearchParams();
 
   const [showPredefinedPrompts, setShowPredefinedPrompts] = useState(true);
+
+  const handleInputChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    setInputValue(e.target.value);
+    originalHandleInputChange(e);
+  }, [originalHandleInputChange]);
 
   const handlePredefinedPrompt = (prompt: string) => {
     console.log('Predefined prompt clicked:', prompt);
@@ -56,7 +62,31 @@ const ChatContainer = () => {
     
     addNewestQuestion(userMessage);
     handleSendMessage(userMessage);
+    setInputValue('');
   };
+
+  const onPressEnter = useCallback((documentIds: string[]) => {
+    // If documentIds is empty, it means it's a regular Enter press
+    if (documentIds.length === 0) {
+      if (!sendDisabled && !sendLoading) {
+        const trimmedValue = inputValue.trim();
+        if (trimmedValue) {
+          const id = uuid();
+          const userMessage = {
+            content: trimmedValue,
+            id,
+            role: MessageType.User,
+          };
+          addNewestQuestion(userMessage);
+          handleSendMessage(userMessage);
+          setInputValue(''); // Clear the input after sending
+        }
+      }
+    } else {
+      // Handle document selection if needed
+      console.log('Documents selected:', documentIds);
+    }
+  }, [inputValue, sendDisabled, sendLoading, addNewestQuestion, handleSendMessage]);
 
   return (
     <>
@@ -109,12 +139,12 @@ const ChatContainer = () => {
 
         <MessageInput
           isShared
-          value={value}
+          value={inputValue}
           disabled={false}
           sendDisabled={sendDisabled}
           conversationId={conversationId}
           onInputChange={handleInputChange}
-          onPressEnter={handlePressEnter}
+          onPressEnter={onPressEnter}
           sendLoading={sendLoading}
           uploadMethod="external_upload_and_parse"
           showUploadIcon={from === SharedFrom.Chat}
