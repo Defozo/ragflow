@@ -382,3 +382,13 @@ class FileService(CommonService):
                 err.append(file.filename + ": " + str(e))
 
         return err, files
+    
+    @classmethod
+    @DB.connection_context()
+    def get_by_filename(cls, filename):
+        try:
+            file = cls.model.select().where(cls.model.name == filename).first()
+            return file
+        except Exception as e:
+            print(f"Error in get_by_filename: {str(e)}")
+            raise RuntimeError("Database error (File retrieval by filename)!")

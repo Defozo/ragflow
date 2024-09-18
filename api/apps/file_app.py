@@ -346,7 +346,25 @@ def get(file_id):
         return response
     except Exception as e:
         return server_error_response(e)
-
+    
+@manager.route('/get_by_filename/<filename>', methods=['GET'])
+def get_by_filename(filename):
+    try:
+        file = FileService.get_by_filename(filename)
+        if not file:
+            return get_data_error_result(retmsg="File not found!")
+        
+        b, n = File2DocumentService.get_minio_address(file_id=file.id)
+        response = flask.make_response(STORAGE_IMPL.get(b, n))
+        ext = re.search(r"\.([^.]+)$", file.name)
+        if ext:
+            if file.type == FileType.VISUAL.value:
+                response.headers.set('Content-Type', f'image/{ext.group(1)}')
+            else:
+                response.headers.set('Content-Type', f'application/{ext.group(1)}')
+        return response
+    except Exception as e:
+        return server_error_response(e)
 
 @manager.route('/mv', methods=['POST'])
 @login_required

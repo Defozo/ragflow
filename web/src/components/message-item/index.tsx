@@ -11,6 +11,7 @@ import { downloadFile } from '@/utils/file-util';
 import { api_host } from '@/utils/api';
 import { Button, Tooltip } from 'antd';
 import { useTranslate } from '@/hooks/common-hooks';
+import { message } from 'antd';
 
 import {
   useFetchDocumentInfosByIds,
@@ -90,12 +91,30 @@ const MessageItem = ({
     }
   }, [item.doc_ids, setDocumentIds, setIds, fileThumbnails]);
 
-  const onDownloadDocument = useCallback((docId: string, docName: string) => () => {
-    console.log('Downloading document:', docId, docName);
-    downloadFile({
-      url: `${api_host}/file/get/d273635c720a11ef88d80242ac150006`, //TODO: Implement download file
-      filename: docName,
-    });
+  const onDownloadDocument = useCallback((docId: string, docName: string) => async () => {
+    try {
+      console.log('Downloading document:', docId, docName);
+      const response = await fetch(`${api_host}/file/get_by_filename/${encodeURIComponent(docName)}`, {
+        method: 'GET',
+      });
+      
+      if (!response.ok) {
+        throw new Error('Failed to download file');
+      }
+
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = docName;
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(url);
+      document.body.removeChild(a);
+    } catch (error) {
+      console.error('Error downloading document:', error);
+      message.error('Failed to download the document. Please try again.');
+    }
   }, []);
 
   return (
