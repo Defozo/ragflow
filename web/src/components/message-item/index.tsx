@@ -135,16 +135,12 @@ const MessageItem = ({
             [styles.messageItemContentReverse]: isUser,
           })}
         >
-          {isUser ? (
-            <Avatar
-              size={40}
-              src={
-                require('@/assets/svg/default-avatar.svg').default
-              }
-            />
-          ) : (
+          {isAssistant ? (
             <AssistantIcon></AssistantIcon>
+          ) : (
+            <></>
           )}
+
           <Flex vertical gap={8} flex={1}>
             <Space>
               {isAssistant ? (
