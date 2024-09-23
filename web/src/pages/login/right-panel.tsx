@@ -12,33 +12,11 @@ const LoginRightPanel = () => {
   const { t } = useTranslate('login');
   return (
     <section className={styles.rightPanel}>
-      <SvgIcon name="login-star" width={80}></SvgIcon>
-      <Flex vertical gap={40}>
-        <Title
-          level={1}
-          className={classNames(styles.white, styles.loginTitle)}
-        >
-          {t('title')}
-        </Title>
-        <Text className={classNames(styles.pink, styles.loginDescription)}>
-          {t('description')}
+      <Flex vertical gap={40} style={{ justifyContent: 'space-between', height: '100%' }}>
+        <div style={{ flexGrow: 1, minHeight: '85vh' }}></div> {/* Empty div to push the text to the bottom and ensure a minimum height */}
+        <Text type="secondary" style={{ color: 'white' }}>
+          This is a modified version of the open-source project RAGflow.
         </Text>
-        <Flex align="center" gap={16}>
-          <Avatars></Avatars>
-          <Flex vertical>
-            <Space>
-              <Rate disabled defaultValue={5} />
-              <span
-                className={classNames(styles.white, styles.loginRateNumber)}
-              >
-                5.0
-              </span>
-            </Space>
-            <span className={classNames(styles.pink, styles.loginRateReviews)}>
-              {t('review')}
-            </span>
-          </Flex>
-        </Flex>
       </Flex>
     </section>
   );
