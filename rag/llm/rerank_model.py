@@ -14,7 +14,7 @@
 #  limitations under the License.
 #
 import re
-import  threading
+import threading
 import requests
 import torch
 from FlagEmbedding import FlagReranker
@@ -192,6 +192,11 @@ class NvidiaRerank(Base):
             "Authorization": f"Bearer {key}",
         }
 
+    def softmax(self, x):
+        """Compute softmax values for each set of scores in x."""
+        e_x = np.exp(x - np.max(x))  # Subtract max for numerical stability
+        return e_x / e_x.sum()
+
     def similarity(self, query: str, texts: list):
         token_count = num_tokens_from_string(query) + sum(
             [num_tokens_from_string(t) for t in texts]
@@ -203,10 +208,25 @@ class NvidiaRerank(Base):
             "truncate": "END",
             "top_n": len(texts),
         }
-        res = requests.post(self.base_url, headers=self.headers, json=data).json()
-        rank = np.array([d["logit"] for d in res["rankings"]])
-        indexs = [d["index"] for d in res["rankings"]]
-        return rank[indexs], token_count
+
+        try:
+            response = requests.post(self.base_url, headers=self.headers, json=data)
+            response.raise_for_status()  # Raise an error for bad status codes
+            res = response.json()
+
+            if "rankings" not in res:
+                return np.array([]), token_count
+
+            logits = np.array([d["logit"] for d in res["rankings"]])
+            softmax_scores = self.softmax(logits)
+            indexs = [d["index"] for d in res["rankings"]]
+            
+            return softmax_scores[indexs], token_count
+
+        except requests.exceptions.RequestException as e:
+            return np.array([]), token_count
+        except KeyError as e:
+            return np.array([]), token_count
 
 
 class LmStudioRerank(Base):
