@@ -65,8 +65,18 @@ const MessageItem = ({
   const [clickedDocumentId, setClickedDocumentId] = useState('');
 
   const referenceDocumentList = useMemo(() => {
-    return reference?.doc_aggs ?? [];
-  }, [reference?.doc_aggs]);
+    const docAggs = reference?.doc_aggs ?? [];
+    const chunkDocs = reference?.chunks?.map(chunk => ({
+      doc_id: chunk.doc_id,
+      doc_name: chunk.doc_name
+    })) ?? [];
+    
+    // Combine and deduplicate
+    const allDocs = [...docAggs, ...chunkDocs];
+    const uniqueDocs = Array.from(new Map(allDocs.map(item => [item.doc_id, item])).values());
+    
+    return uniqueDocs;
+  }, [reference?.doc_aggs, reference?.chunks]);
 
   const handleUserDocumentClick = useCallback(
     (id: string) => () => {
@@ -182,6 +192,7 @@ const MessageItem = ({
                 bordered
                 dataSource={referenceDocumentList}
                 renderItem={(item) => {
+                  if (!item.doc_id || !item.doc_name) return null;
                   return (
                     <List.Item>
                       <Flex gap={'small'} align="center">
