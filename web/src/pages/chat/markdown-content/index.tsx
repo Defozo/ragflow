@@ -13,6 +13,7 @@ import reactStringReplace from 'react-string-replace';
 import SyntaxHighlighter from 'react-syntax-highlighter';
 import remarkGfm from 'remark-gfm';
 import { visitParents } from 'unist-util-visit-parents';
+import NewDocumentLink from '@/components/new-document-link';
 
 import { useTranslation } from 'react-i18next';
 import styles from './index.less';
@@ -43,16 +44,6 @@ const MarkdownContent = ({
   }, [content, loading, t]);
 
   const fileThumbnails = useSelectFileThumbnails();
-
-  const handleDocumentButtonClick = useCallback(
-    (documentId: string, chunk: IChunk, isPdf: boolean) => () => {
-      if (!isPdf) {
-        return;
-      }
-      clickDocumentButton?.(documentId, chunk);
-    },
-    [clickDocumentButton],
-  );
 
   const rehypeWrapReference = () => {
     return function wrapTextTransform(tree: any) {
@@ -121,24 +112,25 @@ const MarkdownContent = ({
                     width={24}
                   ></SvgIcon>
                 )}
-                <Button
-                  type="link"
-                  className={styles.documentLink}
-                  onClick={handleDocumentButtonClick(
-                    documentId,
-                    chunkItem,
-                    fileExtension === 'pdf',
-                  )}
+                <NewDocumentLink
+                  documentId={documentId}
+                  documentName={document?.doc_name || ''}
+                  prefix="document"
                 >
-                  {document?.doc_name}
-                </Button>
+                  <Button
+                    type="link"
+                    className={styles.documentLink}
+                  >
+                    {document?.doc_name}
+                  </Button>
+                </NewDocumentLink>
               </Flex>
             )}
           </Space>
         </Flex>
       );
     },
-    [reference, fileThumbnails, handleDocumentButtonClick],
+    [reference, fileThumbnails],
   );
 
   const renderReference = useCallback(
