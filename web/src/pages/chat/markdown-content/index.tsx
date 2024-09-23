@@ -143,6 +143,16 @@ const MarkdownContent = ({
 
   const renderReference = useCallback(
     (text: string) => {
+      if (text.startsWith("Hello! I am Wagner, an assistant named after the character")) {
+        // Remove ##0$$ and the space before it from the text without displaying the icon
+        let replacedText = text.replace(/\s?##\d+\$\$/g, '');
+        
+        // Apply curReg normally
+        return reactStringReplace(replacedText, curReg, (match, i) => (
+          <span className={styles.cursor} key={i}></span>
+        ));
+      }
+
       let replacedText = reactStringReplace(text, reg, (match, i) => {
         const chunkIndex = getChunkIndex(match);
         return (
@@ -152,11 +162,9 @@ const MarkdownContent = ({
         );
       });
 
-      replacedText = reactStringReplace(replacedText, curReg, (match, i) => (
+      return reactStringReplace(replacedText, curReg, (match, i) => (
         <span className={styles.cursor} key={i}></span>
       ));
-
-      return replacedText;
     },
     [getPopoverContent],
   );
