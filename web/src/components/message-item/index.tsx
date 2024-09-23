@@ -78,6 +78,12 @@ const MessageItem = ({
     return uniqueDocs;
   }, [reference?.doc_aggs, reference?.chunks]);
 
+  const filteredDocumentList = useMemo(() => {
+    return referenceDocumentList.filter(
+      doc => doc.doc_name !== "who-are-you.pdf"
+    );
+  }, [referenceDocumentList]);
+
   const handleUserDocumentClick = useCallback(
     (id: string) => () => {
       setClickedDocumentId(id);
@@ -189,10 +195,10 @@ const MessageItem = ({
                 clickDocumentButton={clickDocumentButton}
               ></MarkdownContent>
             </div>
-            {isAssistant && referenceDocumentList.length > 0 && !isWagnerIntro && (
+            {isAssistant && filteredDocumentList.length > 0 && !isWagnerIntro && (
               <List
                 bordered
-                dataSource={referenceDocumentList}
+                dataSource={filteredDocumentList}
                 renderItem={(docItem) => {
                   if (!docItem.doc_id || !docItem.doc_name) return null;
                   return (
