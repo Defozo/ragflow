@@ -218,7 +218,7 @@ class NvidiaRerank(Base):
                 return np.array([]), token_count
 
             logits = np.array([d["logit"] for d in res["rankings"]])
-            softmax_scores = self.softmax(logits)
+            softmax_scores = self.softmax(logits) * 100
             indexs = [d["index"] for d in res["rankings"]]
             
             return softmax_scores[indexs], token_count
