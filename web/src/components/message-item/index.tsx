@@ -127,6 +127,8 @@ const MessageItem = ({
     }
   }, []);
 
+  const isWagnerIntro = item.content.startsWith("Hello! I am Wagner, an assistant named after the character");
+
   return (
     <div
       className={classNames(styles.messageItem, {
@@ -187,33 +189,33 @@ const MessageItem = ({
                 clickDocumentButton={clickDocumentButton}
               ></MarkdownContent>
             </div>
-            {isAssistant && referenceDocumentList.length > 0 && (
+            {isAssistant && referenceDocumentList.length > 0 && !isWagnerIntro && (
               <List
                 bordered
                 dataSource={referenceDocumentList}
-                renderItem={(item) => {
-                  if (!item.doc_id || !item.doc_name) return null;
+                renderItem={(docItem) => {
+                  if (!docItem.doc_id || !docItem.doc_name) return null;
                   return (
                     <List.Item>
                       <Flex gap={'small'} align="center">
                         <FileIcon
-                          id={item.doc_id}
-                          name={item.doc_name}
+                          id={docItem.doc_id}
+                          name={docItem.doc_name}
                         ></FileIcon>
 
                         <NewDocumentLink
-                          documentId={item.doc_id}
-                          documentName={item.doc_name}
+                          documentId={docItem.doc_id}
+                          documentName={docItem.doc_name}
                           prefix="document"
                         >
-                          {item.doc_name}
+                          {docItem.doc_name}
                         </NewDocumentLink>
 
                         <Tooltip title={t('download', { keyPrefix: 'common' })}>
                           <Button
                             type="text"
                             icon={<DownloadOutlined />}
-                            onClick={onDownloadDocument(item.doc_id, item.doc_name)}
+                            onClick={onDownloadDocument(docItem.doc_id, docItem.doc_name)}
                             style={{ marginLeft: '8px' }}
                           />
                         </Tooltip>
