@@ -348,7 +348,7 @@ class Dealer:
             ins_tw.append(tks)
 
         tksim = self.qryr.token_similarity(keywords, ins_tw)
-        vtsim,_ = rerank_mdl.similarity(" ".join(keywords), [rmSpace(" ".join(tks)) for tks in ins_tw])
+        vtsim,_ = rerank_mdl.similarity(query, [rmSpace(" ".join(tks)) for tks in ins_tw])
 
         return tkweight*np.array(tksim) + vtweight*vtsim, tksim, vtsim
 
@@ -382,6 +382,8 @@ class Dealer:
                 sim, tsim, vsim = self.rerank(
                     sres, question, 1 - vector_similarity_weight, vector_similarity_weight)
             idx = np.argsort(sim * -1)[(page-1)*page_size:page*page_size]
+            if rerank_mdl:
+                idx = idx[1:]  # Skip the first position
         else:
             sim = tsim = vsim = [1]*len(sres.ids)
             idx = list(range(len(sres.ids)))

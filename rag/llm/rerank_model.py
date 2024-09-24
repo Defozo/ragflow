@@ -14,7 +14,7 @@
 #  limitations under the License.
 #
 import re
-import threading
+import  threading
 import requests
 import torch
 from FlagEmbedding import FlagReranker
@@ -25,6 +25,16 @@ import numpy as np
 from api.utils.file_utils import get_home_cache_dir
 from rag.utils import num_tokens_from_string, truncate
 import json
+import logging
+
+# Configure a dedicated logger for this module
+logger = logging.getLogger('rerank_model')
+logger.setLevel(logging.DEBUG)
+handler = logging.StreamHandler()
+formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+handler.setFormatter(formatter)
+logger.addHandler(handler)
+
 
 def sigmoid(x):
     return 1 / (1 + np.exp(-x))
@@ -168,11 +178,11 @@ class LocalAIRerank(Base):
     def similarity(self, query: str, texts: list):
         raise NotImplementedError("The LocalAIRerank has not been implement")
 
-
 class NvidiaRerank(Base):
     def __init__(
         self, key, model_name, base_url="https://ai.api.nvidia.com/v1/retrieval/nvidia/"
     ):
+        logger.info("Initializing NvidiaRerank with model_name: %s", model_name)
         if not base_url:
             base_url = "https://ai.api.nvidia.com/v1/retrieval/nvidia/"
         self.model_name = model_name
@@ -181,26 +191,27 @@ class NvidiaRerank(Base):
             self.base_url = os.path.join(
                 base_url, "nv-rerankqa-mistral-4b-v3", "reranking"
             )
+            logger.info("Set base_url for model nvidia/nv-rerankqa-mistral-4b-v3: %s", self.base_url)
 
         if self.model_name == "nvidia/rerank-qa-mistral-4b":
             self.base_url = os.path.join(base_url, "reranking")
             self.model_name = "nv-rerank-qa-mistral-4b:1"
+            logger.info("Set base_url for model nvidia/rerank-qa-mistral-4b: %s", self.base_url)
 
         self.headers = {
             "accept": "application/json",
             "Content-Type": "application/json",
             "Authorization": f"Bearer {key}",
         }
-
-    def softmax(self, x):
-        """Compute softmax values for each set of scores in x."""
-        e_x = np.exp(x - np.max(x))  # Subtract max for numerical stability
-        return e_x / e_x.sum()
+        logger.info("Headers set for NvidiaRerank: %s", self.headers)
 
     def similarity(self, query: str, texts: list):
+        logger.info("Calculating similarity for query: %s", query)
         token_count = num_tokens_from_string(query) + sum(
             [num_tokens_from_string(t) for t in texts]
         )
+        logger.info("Total token count: %d", token_count)
+        
         data = {
             "model": self.model_name,
             "query": {"text": query},
@@ -208,25 +219,16 @@ class NvidiaRerank(Base):
             "truncate": "END",
             "top_n": len(texts),
         }
-
-        try:
-            response = requests.post(self.base_url, headers=self.headers, json=data)
-            response.raise_for_status()  # Raise an error for bad status codes
-            res = response.json()
-
-            if "rankings" not in res:
-                return np.array([]), token_count
-
-            logits = np.array([d["logit"] for d in res["rankings"]])
-            softmax_scores = self.softmax(logits) * 100
-            indexs = [d["index"] for d in res["rankings"]]
-            
-            return softmax_scores[indexs], token_count
-
-        except requests.exceptions.RequestException as e:
-            return np.array([]), token_count
-        except KeyError as e:
-            return np.array([]), token_count
+        logger.info("Data prepared for request: %s", data)
+        
+        res = requests.post(self.base_url, headers=self.headers, json=data).json()
+        logger.info("Response received: %s", res)
+        
+        rank = np.array([d["logit"] for d in res["rankings"]])
+        indexs = [d["index"] for d in res["rankings"]]
+        logger.info("Rankings calculated: %s", rank)
+        
+        return rank[indexs], token_count
 
 
 class LmStudioRerank(Base):
@@ -303,12 +305,12 @@ class SILICONFLOWRerank(Base):
         response = requests.post(
             self.base_url, json=payload, headers=self.headers
         ).json()
-        rank = np.array([d["relevance_score"] for d in response["results"]])
-        indexs = [d["index"] for d in response["results"]]
-        return (
-            rank[indexs],
-            response["meta"]["tokens"]["input_tokens"] + response["meta"]["tokens"]["output_tokens"],
-        )
+        
+        # Ensure we're returning scores in the original order
+        results = sorted(response["results"], key=lambda x: x["index"])
+        rank = np.array([d["relevance_score"] for d in results])
+        
+        return rank, response["meta"]["tokens"]["input_tokens"] + response["meta"]["tokens"]["output_tokens"]
 
 
 class BaiduYiyanRerank(Base):
