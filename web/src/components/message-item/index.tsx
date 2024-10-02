@@ -28,6 +28,8 @@ import NewDocumentLink from '../new-document-link';
 import { AssistantGroupButton, UserGroupButton } from './group-button';
 import styles from './index.less';
 
+import { CaretDownOutlined, CaretRightOutlined } from '@ant-design/icons';
+
 const { Text } = Typography;
 
 interface IProps extends Partial<IRemoveMessageById>, IRegenerateMessage {
@@ -135,6 +137,12 @@ const MessageItem = ({
 
   const isWagnerIntro = item.content.startsWith("Hello! I am Wagner, an assistant named after the character");
 
+  const [isDocListExpanded, setIsDocListExpanded] = useState(false);
+
+  const toggleDocList = useCallback(() => {
+    setIsDocListExpanded(prev => !prev);
+  }, []);
+
   return (
     <div
       className={classNames(styles.messageItem, {
@@ -196,40 +204,51 @@ const MessageItem = ({
               ></MarkdownContent>
             </div>
             {isAssistant && filteredDocumentList.length > 0 && !isWagnerIntro && (
-              <List
-                bordered
-                dataSource={filteredDocumentList}
-                renderItem={(docItem) => {
-                  if (!docItem.doc_id || !docItem.doc_name) return null;
-                  return (
-                    <List.Item>
-                      <Flex gap={'small'} align="center">
-                        <FileIcon
-                          id={docItem.doc_id}
-                          name={docItem.doc_name}
-                        ></FileIcon>
+              <>
+                <Button 
+                  type="text" 
+                  onClick={toggleDocList}
+                  icon={isDocListExpanded ? <CaretDownOutlined /> : <CaretRightOutlined />}
+                >
+                  {isDocListExpanded ? 'Hide' : 'Show'} {filteredDocumentList.length} source{filteredDocumentList.length > 1 ? 's' : ''}
+                </Button>
+                {isDocListExpanded && (
+                  <List
+                    bordered
+                    dataSource={filteredDocumentList}
+                    renderItem={(docItem) => {
+                      if (!docItem.doc_id || !docItem.doc_name) return null;
+                      return (
+                        <List.Item>
+                          <Flex gap={'small'} align="center">
+                            <FileIcon
+                              id={docItem.doc_id}
+                              name={docItem.doc_name}
+                            ></FileIcon>
 
-                        <NewDocumentLink
-                          documentId={docItem.doc_id}
-                          documentName={docItem.doc_name}
-                          prefix="document"
-                        >
-                          {docItem.doc_name}
-                        </NewDocumentLink>
+                            <NewDocumentLink
+                              documentId={docItem.doc_id}
+                              documentName={docItem.doc_name}
+                              prefix="document"
+                            >
+                              {docItem.doc_name}
+                            </NewDocumentLink>
 
-                        <Tooltip title={t('download', { keyPrefix: 'common' })}>
-                          <Button
-                            type="text"
-                            icon={<DownloadOutlined />}
-                            onClick={onDownloadDocument(docItem.doc_id, docItem.doc_name)}
-                            style={{ marginLeft: '8px' }}
-                          />
-                        </Tooltip>
-                      </Flex>
-                    </List.Item>
-                  );
-                }}
-              />
+                            <Tooltip title={t('download', { keyPrefix: 'common' })}>
+                              <Button
+                                type="text"
+                                icon={<DownloadOutlined />}
+                                onClick={onDownloadDocument(docItem.doc_id, docItem.doc_name)}
+                                style={{ marginLeft: '8px' }}
+                              />
+                            </Tooltip>
+                          </Flex>
+                        </List.Item>
+                      );
+                    }}
+                  />
+                )}
+              </>
             )}
             {isUser && documentList.length > 0 && (
               <List
