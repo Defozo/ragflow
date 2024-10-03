@@ -29,3 +29,15 @@ services:
     networks:
       - ragflow
     restart: always
+
+  fallback:
+    build:
+      context: ../fallback
+      dockerfile: Dockerfile
+    container_name: fallback-server
+    environment:
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - RAGFLOW_URL=http://ragflow:9380
+    networks:
+      - ragflow
+    restart: always

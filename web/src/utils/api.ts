@@ -76,7 +76,7 @@ export default {
   getStats: `${api_host}/api/stats`,
   createExternalConversation: `${api_host}/api/new_conversation`,
   getExternalConversation: `${api_host}/api/conversation`,
-  completeExternalConversation: `${api_host}/api/completion`,
+  completeExternalConversation: `${api_host}/api/middleware`,
   uploadAndParseExternal: `${api_host}/api/document/upload_and_parse`,
 
   // file manager

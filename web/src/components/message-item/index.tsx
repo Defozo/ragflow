@@ -210,7 +210,7 @@ const MessageItem = ({
                   onClick={toggleDocList}
                   icon={isDocListExpanded ? <CaretDownOutlined /> : <CaretRightOutlined />}
                 >
-                  {isDocListExpanded ? 'Hide' : 'Show'} {filteredDocumentList.length} source{filteredDocumentList.length > 1 ? 's' : ''}
+                  {isDocListExpanded ? 'Hide' : 'Show'} source{filteredDocumentList.length > 1 ? 's' : ''}
                 </Button>
                 {isDocListExpanded && (
                   <List
