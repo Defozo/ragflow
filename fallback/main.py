@@ -60,10 +60,10 @@ async def completion_proxy(request: Request):
                                 yield processed
                                 # Check if this was the end-of-stream signal
                                 try:
-                                    if isinstance(json.loads(processed.split("data:")[1]), bool):
+                                    if json.loads(processed.split("data:")[1].strip()) is True:
                                         return  # Stop processing after end of stream
                                 except json.JSONDecodeError:
-                                    pass  # Not JSON, continue processing
+                                    pass  # Not JSON or not the end-of-stream signal, continue processing
                             buffer = ""
 
                     # Process any remaining data in the buffer
@@ -99,13 +99,18 @@ async def completion_proxy(request: Request):
                     yield f"data:{json.dumps(data)}\n\n"
                     return  # Stop processing after end of stream
                 
-                # Updated condition to check for retcode 100 or fallback phrases
-                if data.get("retcode") == 100 or any(phrase in data.get("data", {}).get("answer", "") for phrase in FALLBACK_PHRASES):
-                    logger.info("Received fallback condition, switching to OpenAI")
-                    async for fallback_response in handle_openai_fallback():
-                        yield fallback_response
+                # Only process dictionary data
+                if isinstance(data, dict):
+                    # Updated condition to check for retcode 100 or fallback phrases
+                    if data.get("retcode") == 100 or any(phrase in data.get("data", {}).get("answer", "") for phrase in FALLBACK_PHRASES):
+                        logger.info("Received fallback condition, switching to OpenAI")
+                        async for fallback_response in handle_openai_fallback():
+                            yield fallback_response
+                    else:
+                        logger.debug(f"Forwarding original message: {msg.strip()}")
+                        yield f"data:{msg.strip()}\n\n"
                 else:
-                    logger.debug(f"Forwarding original message: {msg.strip()}")
+                    logger.warning(f"Received non-dictionary data: {data}")
                     yield f"data:{msg.strip()}\n\n"
             except json.JSONDecodeError:
                 logger.warning(f"Failed to parse JSON from message: {msg.strip()}")
@@ -114,9 +119,16 @@ async def completion_proxy(request: Request):
     async def handle_openai_fallback():
         try:
             logger.info("Initiating OpenAI API request")
+            
+            # Define your custom system prompt here
+            system_prompt = "You are a helpful assistant with expertise in various fields. Provide accurate and concise answers. At the end of your answer, you must state that this answer is based on your general knowledge."
+            
+            # Add the system message to the beginning of the messages list
+            full_messages = [{"role": "system", "content": system_prompt}] + openai_messages
+            
             stream = await openai_client.chat.completions.create(
                 model="gpt-4o",
-                messages=openai_messages,
+                messages=full_messages,
                 stream=True
             )
 
@@ -148,16 +160,16 @@ async def completion_proxy(request: Request):
 
         except Exception as e:
             logger.error(f"Error occurred while processing OpenAI request: {str(e)}", exc_info=True)
-            error_response = {
-                "retcode": 1,
-                "retmsg": f"An error occurred: {str(e)}",
-                "data": {
-                    "answer": "",
-                    "reference": [],
-                    "id": response_id
-                }
-            }
-            yield f"data:{json.dumps(error_response)}\n\n"
+            # error_response = {
+            #     "retcode": 1,
+            #     "retmsg": f"An error occurred: {str(e)}",
+            #     "data": {
+            #         "answer": "",
+            #         "reference": [],
+            #         "id": response_id
+            #     }
+            # }
+            # yield f"data:{json.dumps(error_response)}\n\n"
 
     logger.info("Returning StreamingResponse")
     return StreamingResponse(proxy_response(), media_type="text/event-stream")
