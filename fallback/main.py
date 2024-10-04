@@ -20,6 +20,11 @@ openai_client = AsyncOpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 RAGFLOW_URL = os.getenv("RAGFLOW_URL", "http://ragflow:9380")
 logger.info(f"RAGFLOW_URL set to: {RAGFLOW_URL}")
 
+FALLBACK_PHRASES = [
+    "Sorry, I have insufficient information to answer your request.",
+    "I tried to find facts but could not find any to provide you with a reliable answer.",
+]
+
 @app.post("/v1/api/middleware")
 async def completion_proxy(request: Request):
     logger.info("Received completion proxy request")
@@ -81,8 +86,10 @@ async def completion_proxy(request: Request):
             try:
                 data = json.loads(msg.strip())
                 logger.debug(f"Parsed message data: {json.dumps(data, indent=2)}")
-                if data.get("retcode") == 100:
-                    logger.info("Received retcode 100, switching to OpenAI")
+                
+                # Updated condition to check for retcode 100 or fallback phrases
+                if data.get("retcode") == 100 or any(phrase in data.get("data", {}).get("answer", "") for phrase in FALLBACK_PHRASES):
+                    logger.info("Received fallback condition, switching to OpenAI")
                     async for fallback_response in handle_openai_fallback():
                         yield fallback_response
                 else:
@@ -96,7 +103,7 @@ async def completion_proxy(request: Request):
         try:
             logger.info("Initiating OpenAI API request")
             stream = await openai_client.chat.completions.create(
-                model="gpt-4",
+                model="gpt-4o",
                 messages=openai_messages,
                 stream=True
             )
