@@ -52,16 +52,22 @@ async def completion_proxy(request: Request):
                 async with client.stream('POST', ragflow_completion_url, json=payload, headers=headers) as response:
                     logger.info(f"Received response from ragflow. Status: {response.status_code}")
                     buffer = ""
+                    stream_ended = False
                     async for chunk in response.aiter_text():
+                        if stream_ended:
+                            break
                         logger.debug(f"Received chunk: {chunk}")
                         buffer += chunk
                         if buffer.endswith("\n\n"):
                             async for processed in process_message(buffer):
                                 yield processed
+                                if isinstance(json.loads(processed.split("data:")[1]), bool):
+                                    stream_ended = True
+                                    break
                             buffer = ""
 
                     # Process any remaining data in the buffer
-                    if buffer:
+                    if buffer and not stream_ended:
                         async for processed in process_message(buffer):
                             yield processed
 
@@ -80,12 +86,20 @@ async def completion_proxy(request: Request):
 
     async def process_message(message):
         messages = message.split("data:")
+        stream_ended = False
         for msg in messages:
-            if not msg.strip():
+            if not msg.strip() or stream_ended:
                 continue
             try:
                 data = json.loads(msg.strip())
                 logger.debug(f"Parsed message data: {json.dumps(data, indent=2)}")
+                
+                # Check if data is a boolean (True) indicating end of stream
+                if isinstance(data, bool):
+                    logger.debug("Received end of stream signal")
+                    yield f"data:{json.dumps(data)}\n\n"
+                    stream_ended = True
+                    continue
                 
                 # Updated condition to check for retcode 100 or fallback phrases
                 if data.get("retcode") == 100 or any(phrase in data.get("data", {}).get("answer", "") for phrase in FALLBACK_PHRASES):
