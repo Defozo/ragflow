@@ -52,43 +52,42 @@ async def completion_proxy(request: Request):
                 async with client.stream('POST', ragflow_completion_url, json=payload, headers=headers) as response:
                     logger.info(f"Received response from ragflow. Status: {response.status_code}")
                     buffer = ""
-                    stream_ended = False
                     async for chunk in response.aiter_text():
-                        if stream_ended:
-                            break
                         logger.debug(f"Received chunk: {chunk}")
                         buffer += chunk
                         if buffer.endswith("\n\n"):
                             async for processed in process_message(buffer):
                                 yield processed
-                                if isinstance(json.loads(processed.split("data:")[1]), bool):
-                                    stream_ended = True
-                                    break
+                                # Check if this was the end-of-stream signal
+                                try:
+                                    if isinstance(json.loads(processed.split("data:")[1]), bool):
+                                        return  # Stop processing after end of stream
+                                except json.JSONDecodeError:
+                                    pass  # Not JSON, continue processing
                             buffer = ""
 
                     # Process any remaining data in the buffer
-                    if buffer and not stream_ended:
+                    if buffer:
                         async for processed in process_message(buffer):
                             yield processed
 
             except Exception as e:
                 logger.error(f"Error occurred while proxying request: {str(e)}", exc_info=True)
-                error_response = {
-                    "retcode": 1,
-                    "retmsg": f"An error occurred while proxying request: {str(e)}",
-                    "data": {
-                        "answer": "",
-                        "reference": [],
-                        "id": response_id
-                    }
-                }
-                yield f"data:{json.dumps(error_response)}\n\n"
+                # error_response = {
+                #     "retcode": 1,
+                #     "retmsg": f"An error occurred while proxying request: {str(e)}",
+                #     "data": {
+                #         "answer": "",
+                #         "reference": [],
+                #         "id": response_id
+                #     }
+                # }
+                #yield f"data:{json.dumps(error_response)}\n\n"
 
     async def process_message(message):
         messages = message.split("data:")
-        stream_ended = False
         for msg in messages:
-            if not msg.strip() or stream_ended:
+            if not msg.strip():
                 continue
             try:
                 data = json.loads(msg.strip())
@@ -98,8 +97,7 @@ async def completion_proxy(request: Request):
                 if isinstance(data, bool):
                     logger.debug("Received end of stream signal")
                     yield f"data:{json.dumps(data)}\n\n"
-                    stream_ended = True
-                    continue
+                    return  # Stop processing after end of stream
                 
                 # Updated condition to check for retcode 100 or fallback phrases
                 if data.get("retcode") == 100 or any(phrase in data.get("data", {}).get("answer", "") for phrase in FALLBACK_PHRASES):
