@@ -67,16 +67,16 @@ def set_api_key():
             except Exception as e:
                 msg += f"\nFail to access embedding model({llm.llm_name}) using this api key." + str(e)
         elif not chat_passed and llm.model_type == LLMType.CHAT.value:
-            mdl = ChatModel[factory](
-                req["api_key"], llm.llm_name, base_url=req.get("base_url"))
-            try:
-                m, tc = mdl.chat(None, [{"role": "user", "content": "Hello! How are you doing!"}], 
-                                 {"temperature": 0.9,'max_tokens':50})
-                if m.find("**ERROR**") >=0:
-                    raise Exception(m)
-            except Exception as e:
-                msg += f"\nFail to access model({llm.llm_name}) using this api key." + str(
-                    e)
+            # mdl = ChatModel[factory](
+            #     req["api_key"], llm.llm_name, base_url=req.get("base_url"))
+            # try:
+            #     m, tc = mdl.chat(None, [{"role": "user", "content": "Hello! How are you doing!"}], 
+            #                      {"temperature": 0.9,'max_tokens':50})
+            #     if m.find("**ERROR**") >=0:
+            #         raise Exception(m)
+            # except Exception as e:
+            #     msg += f"\nFail to access model({llm.llm_name}) using this api key." + str(
+            #         e)
             chat_passed = True
         elif not rerank_passed and llm.model_type == LLMType.RERANK:
             mdl = RerankModel[factory](
